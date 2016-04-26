@@ -110,14 +110,131 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         $this->subscribe('beforeDeactivate');
     }
 
+    /**
+     * Create database table to store last visited surveys
+     *
+     * @todo Uses MyISAM as engine in MySQL?
+     * @return void
+     */
     public function beforeActivate()
     {
         // Create database table to store visited surveys
+        // Code copied from updatedb_helper.
+        // TODO: Include routine in plugin system?
+        $oDB = Yii::app()->getDb();
+        Yii::app()->setConfig('Updating',true);
+        $oDB->schemaCachingDuration=0; // Deactivate schema caching
+        $oTransaction = $oDB->beginTransaction();
+        try
+        {
+            $aFields = array(
+                'uid' => 'pk',
+                'sid1' => 'integer',
+                'sid2' => 'integer',
+                'sid3' => 'integer',
+                'sid4' => 'integer',
+                'sid5' => 'integer',
+            );
+            $oDB->createCommand()->createTable('{{plugin_last_visited_surveys}}',$aFields);
+            $oDB->createCommand()->addForeignKey(
+                'fk_survey_id',
+                '{{plugin_last_visited_surveys}}',
+                'uid',
+                '{{users}}',
+                'uid',
+                'CASCADE',
+                'CASCADE'
+            );
+            $oDB->createCommand()->addForeignKey(
+                'fk_sid1',
+                '{{plugin_last_visited_surveys}}',
+                'sid1',
+                '{{surveys}}',
+                'sid'
+            );
+            $oDB->createCommand()->addForeignKey(
+                'fk_sid2',
+                '{{plugin_last_visited_surveys}}',
+                'sid2',
+                '{{surveys}}',
+                'sid'
+            );
+            $oDB->createCommand()->addForeignKey(
+                'fk_sid3',
+                '{{plugin_last_visited_surveys}}',
+                'sid3',
+                '{{surveys}}',
+                'sid'
+            );
+            $oDB->createCommand()->addForeignKey(
+                'fk_sid4',
+                '{{plugin_last_visited_surveys}}',
+                'sid4',
+                '{{surveys}}',
+                'sid'
+            );
+            $oDB->createCommand()->addForeignKey(
+                'fk_sid5',
+                '{{plugin_last_visited_surveys}}',
+                'sid5',
+                '{{surveys}}',
+                'sid'
+            );
+        }
+        catch(Exception $e)
+        {
+            Yii::app()->setConfig('Updating',false);
+            $oTransaction->rollback();
+            // Activate schema caching
+            $oDB->schemaCachingDuration = 3600;
+            // Load all tables of the application in the schema
+            $oDB->schema->getTables();
+            // Clear the cache of all loaded tables
+            $oDB->schema->refresh();
+            $event = $this->getEvent();
+            $event->set('success', false);
+            $event->set(
+                'message',
+                gT('An non-recoverable error happened during the update. Error details:')
+                . "<p>"
+                . htmlspecialchars($e->getMessage())
+                . "</p>"
+            );
+            return;
+        }
     }
 
     public function beforeDeactivate()
     {
         // Remove table
+        $oDB = Yii::app()->getDb();
+        Yii::app()->setConfig('Updating',true);
+        $oDB->schemaCachingDuration=0; // Deactivate schema caching
+        $oTransaction = $oDB->beginTransaction();
+        try
+        {
+            $oDB->createCommand()->dropTable('{{asdplugin_last_visited_surveys}}');
+        }
+        catch(Exception $e)
+        {
+            Yii::app()->setConfig('Updating',false);
+            $oTransaction->rollback();
+            // Activate schema caching
+            $oDB->schemaCachingDuration = 3600;
+            // Load all tables of the application in the schema
+            $oDB->schema->getTables();
+            // Clear the cache of all loaded tables
+            $oDB->schema->refresh();
+            $event = $this->getEvent();
+            $event->set(
+                'message',
+                gT('An non-recoverable error happened during the update. Error details:')
+                . "<p>"
+                . htmlspecialchars($e->getMessage())
+                . '</p>'
+            );
+            return;
+        }
     }
 
     public function beforeAdminMenuRender()
