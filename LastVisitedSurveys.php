@@ -225,6 +225,14 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
 
     public function beforeAdminMenuRender()
     {
+        // This can happen when plugin is deactivated and plugin manager
+        // still wants to render to list, for whatever reason.
+        $tableSchema = Yii::app()->db->schema->getTable('{{plugin_last_visited_surveys}}');
+        if ($tableSchema === null)
+        {
+            return;
+        }
+
         // Get row from database
         $userId = Yii::app()->user->getId();
         $lastVisitedSurveys = LastVisitedSurveysModel::model()->findByPk($userId);
