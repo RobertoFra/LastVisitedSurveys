@@ -28,5 +28,8 @@ class ExtraMenuItem implements ExtraMenuItemInterface
     public function getHref() { return $this->href; }
     public function getLabel() { return $this->label; }
     public function isDivider() { return $this->isDivider; }
+
+    // Used by array_unique
+    public function __toString() { return $this->href; }
 }
 

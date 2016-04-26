@@ -1,96 +1,6 @@
 <?php 
 
 /**
- * Interface descriptions here: https://manual.limesurvey.org/Extra_menus_event
- * @todo Move interfaces and classes into core so other plugins can use them in other menu extention points
- */
-
-interface ExtraMenuInterface
-{
-    public function isDropDown();
-    public function getLabel();
-    public function getHref();
-    public function getMenuItems();
-}
-
-interface ExtraMenuItemInterface
-{
-    public function getHref();
-    public function getLabel();
-    public function isDivider();
-}
-
-class ExtraMenuItem implements ExtraMenuItemInterface
-{
-
-    protected $isDivider = false;
-    protected $href = "#";
-    protected $label = "Missing label";
-
-    public function __construct($options)
-    {
-      if (isset($options['isDivider']))
-      {
-          $this->isDivider = $options['isDivider'];
-      }
-
-      if (isset($options['label']))
-      {
-          $this->label = $options['label'];
-      }
-
-      if (isset($options['href']))
-      {
-          $this->href = $options['href'];
-      }
-    }
-
-    public function getHref() { return $this->href; }
-    public function getLabel() { return $this->label; }
-    public function isDivider() { return $this->isDivider; }
-}
-
-class ExtraMenu implements ExtraMenuInterface
-{
-  protected $isDropDown = false;
-  protected $label = "Missing label";
-  protected $href = "#";
-  protected $menuItems = array();
-
-  /**
-   * @param array $options - Options for either dropdown menu or plain link
-   * @return ExtraMenu
-   */
-  public function __construct($options)
-  {
-      if (isset($options['isDropDown']))
-      {
-          $this->isDropDown = $options['isDropDown'];
-      }
-
-      if (isset($options['label']))
-      {
-          $this->label = $options['label'];
-      }
-
-      if (isset($options['href']))
-      {
-          $this->href = $options['href'];
-      }
-
-      if (isset($options['menuItems']))
-      {
-          $this->menuItems = $options['menuItems'];
-      }
-  }
-
-  public function isDropDown() { return $this->isDropDown; }
-  public function getLabel() { return $this->label; }
-  public function getHref() { return $this->href; }
-  public function getMenuItems() { return $this->menuItems; }
-}
-
-/**
  * Some extra quick-menu items to ease everyday usage
  *
  * @since 2016-04-22
@@ -108,6 +18,7 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         $this->subscribe('beforeAdminMenuRender');
         $this->subscribe('beforeActivate');
         $this->subscribe('beforeDeactivate');
+        $this->subscribe('beforeSurveyAdminView');
     }
 
     /**
@@ -233,22 +144,89 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         }
     }
 
+    public function beforeSurveyAdminView()
+    {
+        // Get row from database
+        $userId = Yii::app()->user->getId();
+        $lastVisitedSurveys = LastVisitedSurveysModel::model()->findByPk($userId);
+
+        if ($lastVisitedSurveys === null)
+        {
+            // First usage after plugin activation
+            $lastVisitedSurveys = new LastVisitedSurveysModel();
+            $lastVisitedSurveys->uid = $userId;
+            $lastVisitedSurveys->save();
+        }
+
+        // Check if visited survey is already in queue. Then do nothing.
+        // TODO: Move it to top instead
+        $event = $this->getEvent();
+        $surveyId = $event->get('surveyId');
+        $surveyAlreadyInList = $this->surveyAlreadyInList($surveyId, $lastVisitedSurveys);
+        if ($surveyAlreadyInList)
+        {
+            return;
+        }
+
+        // Push all last visited surveys back in queue
+        $lastVisitedSurveys->sid5 = $lastVisitedSurveys->sid4;
+        $lastVisitedSurveys->sid4 = $lastVisitedSurveys->sid3;
+        $lastVisitedSurveys->sid3 = $lastVisitedSurveys->sid2;
+        $lastVisitedSurveys->sid2 = $lastVisitedSurveys->sid1;
+        $lastVisitedSurveys->sid1 = $surveyId;
+        $lastVisitedSurveys->save();
+    }
+
+    /**
+     * @param int $surveyId
+     * @param LastVisitedSurveysModel $lastVisitedSurveys
+     * @return bool
+     */
+    protected function surveyAlreadyInList($surveyId, LastVisitedSurveysModel $lastVisitedSurveys)
+    {
+       return $surveyId == $lastVisitedSurveys->sid1
+        || $surveyId == $lastVisitedSurveys->sid2
+        || $surveyId == $lastVisitedSurveys->sid3
+        || $surveyId == $lastVisitedSurveys->sid4
+        || $surveyId == $lastVisitedSurveys->sid5;
+    }
+
+    protected function getMenuItems(LastVisitedSurveysModel $lastVisitedSurveys) {
+        $menuItems = array();
+
+        $sids = array('sid1', 'sid2', 'sid3', 'sid4', 'sid5');
+
+        // TODO: Use only survey1, not sid etc
+        $surveys = array('survey1', 'survey2', 'survey3', 'survey4', 'survey5');
+
+        foreach ($sids as $i => $sid)
+        {
+            $surveyVariable = $surveys[$i];
+            $menuItems[$i] = new ExtraMenuItem(array(
+                'label' => $lastVisitedSurveys->$surveyVariable->surveyInfo['surveyls_title'],
+                'href' => Yii::app()->createUrl('/admin/survey/sa/view/surveyid/' . $lastVisitedSurveys->$sid)
+            ));
+        }
+
+        $menuItems = array_unique($menuItems);
+
+        return $menuItems;
+    }
+
     public function beforeAdminMenuRender()
     {
+        // Get row from database
+        $userId = Yii::app()->user->getId();
+        $lastVisitedSurveys = LastVisitedSurveysModel::model()->findByPk($userId);
+
+        $menuItems = $this->getMenuItems($lastVisitedSurveys);
         // Return new menu
         $event = $this->getEvent();
         $event->set('extraMenus', array(
-            new ExtraMenu(null)
-        ));
-        $event->set('extraMenus', array(
           new ExtraMenu(array(
             'isDropDown' => true,
-            'menuItems' => array(
-                new ExtraMenuItem(null),
-                new ExtraMenuItem(null),
-                new ExtraMenuItem(array('isDivider' => true)),
-                new ExtraMenuItem(null)
-            )
+            'label' => gT('Recently visited'),
+            'menuItems' => $menuItems
           ))
         ));
     }
