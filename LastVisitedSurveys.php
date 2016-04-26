@@ -121,7 +121,7 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         $oTransaction = $oDB->beginTransaction();
         try
         {
-            $oDB->createCommand()->dropTable('{{asdplugin_last_visited_surveys}}');
+            $oDB->createCommand()->dropTable('{{plugin_last_visited_surveys}}');
         }
         catch(Exception $e)
         {
@@ -191,8 +191,13 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         || $surveyId == $lastVisitedSurveys->sid5;
     }
 
-    protected function getMenuItems(LastVisitedSurveysModel $lastVisitedSurveys) {
+    protected function getMenuItems($lastVisitedSurveys) {
         $menuItems = array();
+
+        if ($lastVisitedSurveys === null)
+        {
+            return $menuItems;
+        }
 
         $sids = array('sid1', 'sid2', 'sid3', 'sid4', 'sid5');
 
@@ -202,10 +207,15 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         foreach ($sids as $i => $sid)
         {
             $surveyVariable = $surveys[$i];
-            $menuItems[$i] = new ExtraMenuItem(array(
-                'label' => $lastVisitedSurveys->$surveyVariable->surveyInfo['surveyls_title'],
-                'href' => Yii::app()->createUrl('/admin/survey/sa/view/surveyid/' . $lastVisitedSurveys->$sid)
-            ));
+            $survey = $lastVisitedSurveys->$surveyVariable;
+            if ($survey !== null)
+            {
+                $surveyInfo = $survey->surveyInfo;
+                $menuItems[$i] = new ExtraMenuItem(array(
+                    'label' => $surveyInfo['surveyls_title'],
+                    'href' => Yii::app()->createUrl('/admin/survey/sa/view/surveyid/' . $lastVisitedSurveys->$sid)
+                ));
+            }
         }
 
         $menuItems = array_unique($menuItems);
