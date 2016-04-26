@@ -122,7 +122,6 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         // Code copied from updatedb_helper.
         // TODO: Include routine in plugin system?
         $oDB = Yii::app()->getDb();
-        Yii::app()->setConfig('Updating',true);
         $oDB->schemaCachingDuration=0; // Deactivate schema caching
         $oTransaction = $oDB->beginTransaction();
         try
@@ -183,7 +182,6 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         }
         catch(Exception $e)
         {
-            Yii::app()->setConfig('Updating',false);
             $oTransaction->rollback();
             // Activate schema caching
             $oDB->schemaCachingDuration = 3600;
@@ -208,7 +206,6 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
     {
         // Remove table
         $oDB = Yii::app()->getDb();
-        Yii::app()->setConfig('Updating',true);
         $oDB->schemaCachingDuration=0; // Deactivate schema caching
         $oTransaction = $oDB->beginTransaction();
         try
@@ -217,7 +214,6 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         }
         catch(Exception $e)
         {
-            Yii::app()->setConfig('Updating',false);
             $oTransaction->rollback();
             // Activate schema caching
             $oDB->schemaCachingDuration = 3600;
