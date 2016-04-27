@@ -90,6 +90,7 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
                 '{{surveys}}',
                 'sid'
             );
+            $oTransaction->commit();
         }
         catch(Exception $e)
         {
@@ -111,7 +112,6 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
             );
             return;
         }
-        $oTransaction->commit();
     }
 
     public function beforeDeactivate()
@@ -123,6 +123,7 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         try
         {
             $oDB->createCommand()->dropTable('{{plugin_last_visited_surveys}}');
+            $oTransaction->commit();
         }
         catch(Exception $e)
         {
@@ -143,7 +144,6 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
             );
             return;
         }
-        $oTransaction->commit();
     }
 
     public function beforeSurveyAdminView()
