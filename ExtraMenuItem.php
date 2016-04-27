@@ -7,6 +7,7 @@ class ExtraMenuItem implements ExtraMenuItemInterface
     protected $isSmallText = false;
     protected $href = "#";
     protected $label = "Missing label";
+    protected $iconClass = "";
 
     public function __construct($options)
     {
@@ -29,10 +30,16 @@ class ExtraMenuItem implements ExtraMenuItemInterface
       {
           $this->href = $options['href'];
       }
+
+      if (isset($options['iconClass']))
+      {
+          $this->iconClass = $options['iconClass'];
+      }
     }
 
     public function getHref() { return $this->href; }
     public function getLabel() { return $this->label; }
+    public function getIconClass() { return $this->iconClass; }
     public function isDivider() { return $this->isDivider; }
     public function isSmallText() { return $this->isSmallText; }
 

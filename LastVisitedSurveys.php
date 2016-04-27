@@ -180,6 +180,8 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
     }
 
     /**
+     * Returns true if visited survey is already in last visited list
+     *
      * @param int $surveyId
      * @param LastVisitedSurveysModel $lastVisitedSurveys
      * @return bool
@@ -193,7 +195,47 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         || $surveyId == $lastVisitedSurveys->sid5;
     }
 
-    protected function getMenuItems($lastVisitedSurveys) {
+    /**
+     * Return icon class for survey state
+     *
+     * @param string $state
+     * @return string
+     */
+    protected function getIconForState($state)
+    {
+        if ($state === 'running')
+        {
+            return 'fa fa-play text-success';
+        }
+        elseif ($state === 'inactive')
+        {
+            return 'fa fa-stop text-warning';
+        }
+        elseif ($state === 'expired')
+        {
+            return 'fa fa-step-forward text-warning';
+        }
+        elseif ($state === 'willExpire')
+        {
+            return 'fa fa-clock-o text-success';
+        }
+        elseif ($state === 'willRun')
+        {
+            return 'fa fa-clock-o text-warning';
+        }
+
+        return '';
+
+    }
+
+    /**
+     * Get menu items to show in menu (list of survey links for now)
+     *
+     * @param array<LastVisitedSurveysModel>|null
+     * @return array<ExtraMenuItem>
+     */
+    protected function getMenuItems($lastVisitedSurveys)
+    {
         $menuItems = array();
 
         if ($lastVisitedSurveys === null)
@@ -213,10 +255,13 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
             if ($survey !== null)
             {
                 $surveyInfo = $survey->surveyInfo;
+                $state = $survey->getState();
                 $menuItems[$i] = new ExtraMenuItem(array(
                     'label' => $surveyInfo['surveyls_title'],
-                    'href' => Yii::app()->createUrl('/admin/survey/sa/view/surveyid/' . $lastVisitedSurveys->$sid)
+                    'href' => Yii::app()->createUrl('/admin/survey/sa/view/surveyid/' . $lastVisitedSurveys->$sid),
+                    'iconClass' => $this->getIconForState($state)
                 ));
+
             }
         }
 
