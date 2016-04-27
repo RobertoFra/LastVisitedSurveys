@@ -143,6 +143,7 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
             );
             return;
         }
+        $oTransaction->commit();
     }
 
     public function beforeSurveyAdminView()
