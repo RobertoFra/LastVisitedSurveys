@@ -257,7 +257,7 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
                 $surveyInfo = $survey->surveyInfo;
                 $state = $survey->getState();
                 $menuItems[$i] = new ExtraMenuItem(array(
-                    'label' => $surveyInfo['surveyls_title'],
+                    'label' => ellipsize($surveyInfo['surveyls_title'], 50),
                     'href' => Yii::app()->createUrl('/admin/survey/sa/view/surveyid/' . $lastVisitedSurveys->$sid),
                     'iconClass' => $this->getIconForState($state)
                 ));
