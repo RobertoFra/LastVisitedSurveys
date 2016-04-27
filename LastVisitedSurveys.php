@@ -237,7 +237,13 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         $userId = Yii::app()->user->getId();
         $lastVisitedSurveys = LastVisitedSurveysModel::model()->findByPk($userId);
 
-        $menuItems = $this->getMenuItems($lastVisitedSurveys);
+        $menuItems = array();
+        $menuItems[] = new ExtraMenuItem(array(
+            'isSmallText' => true,
+            'label' => gT('Surveys')
+        ));
+        $menuItems = array_merge($menuItems, $this->getMenuItems($lastVisitedSurveys));
+
         // Return new menu
         $event = $this->getEvent();
         $event->set('extraMenus', array(
