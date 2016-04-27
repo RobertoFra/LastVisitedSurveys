@@ -224,7 +224,7 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
             return 'fa fa-clock-o text-warning';
         }
 
-        return '';
+        throw InvalidArgumentException("Unvalid survey state: " . $state);
 
     }
 
