@@ -1,9 +1,9 @@
-Requirements:
+### Requirements
 
 * LimeSurvey 2.5
 
-Tested with:
+### Installation
 
-* PHP 7.0
-* PostgreSQL
-* MySQL
+As any other LimeSurvey plugin.
+
+![Last visited surveys](assets/lastvisitedsurveys.png)
