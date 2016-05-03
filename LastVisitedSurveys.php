@@ -1,5 +1,8 @@
 <?php 
 
+use \ls\menu\MenuItem;
+use \ls\menu\Menu;
+
 /**
  * Some extra quick-menu items to ease everyday usage
  *
@@ -232,7 +235,7 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
      * Get menu items to show in menu (list of survey links for now)
      *
      * @param array<LastVisitedSurveysModel>|null
-     * @return array<ExtraMenuItem>
+     * @return array<MenuItem>
      */
     protected function getMenuItems($lastVisitedSurveys)
     {
@@ -256,7 +259,7 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
             {
                 $surveyInfo = $survey->surveyInfo;
                 $state = $survey->getState();
-                $menuItems[$i] = new ExtraMenuItem(array(
+                $menuItems[$i] = new MenuItem(array(
                     'label' => ellipsize($surveyInfo['surveyls_title'], 50),
                     'href' => Yii::app()->createUrl('/admin/survey/sa/view/surveyid/' . $lastVisitedSurveys->$sid),
                     'iconClass' => $this->getIconForState($state)
@@ -285,7 +288,7 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         $lastVisitedSurveys = LastVisitedSurveysModel::model()->findByPk($userId);
 
         $menuItems = array();
-        $menuItems[] = new ExtraMenuItem(array(
+        $menuItems[] = new MenuItem(array(
             'isSmallText' => true,
             'label' => gT('Surveys')
         ));
@@ -294,7 +297,7 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         // Return new menu
         $event = $this->getEvent();
         $event->set('extraMenus', array(
-          new ExtraMenu(array(
+          new Menu(array(
             'isDropDown' => true,
             'label' => gT('Recently visited'),
             'menuItems' => $menuItems
