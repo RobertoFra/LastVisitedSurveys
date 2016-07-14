@@ -41,7 +41,7 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         try
         {
             $aFields = array(
-                'uid' => 'pk',
+                'uid' => 'integer primary key',
                 'sid1' => 'integer',
                 'sid2' => 'integer',
                 'sid3' => 'integer',
@@ -49,50 +49,6 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
                 'sid5' => 'integer',
             );
             $oDB->createCommand()->createTable('{{plugin_last_visited_surveys}}',$aFields);
-            $oDB->createCommand()->addForeignKey(
-                'fk_survey_id',
-                '{{plugin_last_visited_surveys}}',
-                'uid',
-                '{{users}}',
-                'uid',
-                'CASCADE',
-                'CASCADE'
-            );
-            $oDB->createCommand()->addForeignKey(
-                'fk_sid1',
-                '{{plugin_last_visited_surveys}}',
-                'sid1',
-                '{{surveys}}',
-                'sid'
-            );
-            $oDB->createCommand()->addForeignKey(
-                'fk_sid2',
-                '{{plugin_last_visited_surveys}}',
-                'sid2',
-                '{{surveys}}',
-                'sid'
-            );
-            $oDB->createCommand()->addForeignKey(
-                'fk_sid3',
-                '{{plugin_last_visited_surveys}}',
-                'sid3',
-                '{{surveys}}',
-                'sid'
-            );
-            $oDB->createCommand()->addForeignKey(
-                'fk_sid4',
-                '{{plugin_last_visited_surveys}}',
-                'sid4',
-                '{{surveys}}',
-                'sid'
-            );
-            $oDB->createCommand()->addForeignKey(
-                'fk_sid5',
-                '{{plugin_last_visited_surveys}}',
-                'sid5',
-                '{{surveys}}',
-                'sid'
-            );
             $oTransaction->commit();
         }
         catch(Exception $e)
@@ -155,7 +111,7 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         $userId = Yii::app()->user->getId();
         $lastVisitedSurveys = LastVisitedSurveysModel::model()->findByPk($userId);
 
-        if ($lastVisitedSurveys === null)
+        if (!$lastVisitedSurveys)
         {
             // First usage after plugin activation
             $lastVisitedSurveys = new LastVisitedSurveysModel();
@@ -179,7 +135,7 @@ class LastVisitedSurveys extends \ls\pluginmanager\PluginBase
         $lastVisitedSurveys->sid3 = $lastVisitedSurveys->sid2;
         $lastVisitedSurveys->sid2 = $lastVisitedSurveys->sid1;
         $lastVisitedSurveys->sid1 = $surveyId;
-        $lastVisitedSurveys->save();
+        $lastVisitedSurveys->update();
     }
 
     /**

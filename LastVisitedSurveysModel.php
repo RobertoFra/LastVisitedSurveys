@@ -14,7 +14,7 @@ class LastVisitedSurveysModel extends LSActiveRecord
 
     public function primaryKey()
     {
-        return array('uid');
+        return 'uid';
     }
 
     public function relations()
